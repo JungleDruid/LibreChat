@@ -137,10 +137,14 @@ class BaseClient {
       url = this.options.reverseProxyUrl;
     }
     logger.debug(`Making request to ${url}`);
-    if (typeof Bun !== 'undefined') {
-      return await fetch(url, init);
+    const res = await fetch(url, init);
+    if (!res.ok) {
+      const clone = res.clone();
+      logger.error(`error fetching ${url}`);
+      if (init?.body) logger.error(`req body: ${JSON.stringify(init.body)}`);
+      logger.error(`error response: ${await clone.text()}`);
     }
-    return await fetch(url, init);
+    return res;
   }
 
   getBuildMessagesOptions() {
